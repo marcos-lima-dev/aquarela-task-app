@@ -14,7 +14,7 @@ import { useTaskStore, type Task } from "@/store/useTaskStore";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Variável global para abrir o sheet de edição a partir do TaskCard
+// Variável global para o TaskCard abrir o sheet em modo edição
 let openEditTask: ((task: Task) => void) | null = null;
 
 export default function TaskSheet() {
@@ -29,38 +29,31 @@ export default function TaskSheet() {
     if (!trimmedTitle) return;
 
     if (editingTask) {
-      // EDITAR TAREFA
       editTask(editingTask.id, trimmedTitle);
-      toast.success("Task updated successfully!", {
+      toast.success("Task updated!", {
         description: `"${trimmedTitle}" was edited.`,
-        duration: 4000,
       });
     } else {
-      // CRIAR NOVA TAREFA
-      const newTask = { id: crypto.randomUUID(), title: trimmedTitle, completed: false };
       addTask(trimmedTitle);
 
       toast.success("Task created!", {
         description: `"${trimmedTitle}" added to your list.`,
-        duration: 5000,
         action: {
           label: "Undo",
           onClick: () => {
-            // Remove a última tarefa adicionada (a que acabou de ser criada)
             const latest = tasks[tasks.length - 1];
-            if (latest && latest.title === trimmedTitle) {
-              // Simplesmente remove do array (não tem delete ainda, então "esconde")
-              useTaskStore.setState({
-                tasks: tasks.filter(t => t.id !== latest.id),
-              });
-              toast("Task removed", { description: "Undo completed." });
+            if (latest?.title === trimmedTitle) {
+              useTaskStore.setState((state) => ({
+                tasks: state.tasks.filter((t) => t.id !== latest.id),
+              }));
+              toast("Undo complete", { description: "Task removed." });
             }
           },
         },
       });
     }
 
-    // Reset e fecha o sheet
+    // Reset e fecha
     setTitle("");
     setEditingTask(null);
     setOpen(false);
@@ -78,18 +71,17 @@ export default function TaskSheet() {
     setOpen(true);
   };
 
-  // Expõe a função para o TaskCard usar
   openEditTask = openEdit;
 
   return (
     <>
-      {/* Botão Flutuante Roxo */}
+      {/* BOTÃO FLUTUANTE COM ESPAÇO PERFEITO */}
       <Button
         onClick={openCreate}
         className={cn(
-          "fixed bottom-8 right-6 z-50 h-14 w-14 rounded-full shadow-2xl",
+          "fixed bottom-12 right-6 z-50 h-14 w-14 rounded-full shadow-2xl", // ← bottom-12 = 48px de distância
           "bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800",
-          "text-white p-0 transition-all duration-300 hover:scale-110 hover:shadow-purple-500/25",
+          "text-white p-0 transition-all duration-300 hover:scale-110 hover:shadow-purple-500/30",
           open && "rotate-45"
         )}
         aria-label="Create new task"
@@ -98,22 +90,24 @@ export default function TaskSheet() {
         <span className="sr-only">Create task</span>
       </Button>
 
-      {/* Bottom Sheet */}
+      {/* BOTTOM SHEET COM Z-INDEX ALTO */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl z-50"  // ← só adiciona z-50 aqui
->
-          {/* Puxador do sheet */}
-          <div className="mx-auto w-16 h-1.5 bg-gray-300 rounded-full mt-3 mb-6" />
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] rounded-t-3xl z-50 bg-white dark:bg-gray-950"
+        >
+          {/* Puxador */}
+          <div className="mx-auto w-16 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mt-3 mb-6" />
 
           <SheetHeader className="mb-8 text-center">
-            <SheetTitle className="text-2xl font-bold">
+            <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-white">
               {editingTask ? "Edit Task" : "Create Task"}
             </SheetTitle>
           </SheetHeader>
 
           <div className="px-6 space-y-6">
             <div>
-              <label htmlFor="task-title" className="text-sm font-medium text-gray-700">
+              <label htmlFor="task-title" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Task title
               </label>
               <Input
@@ -122,20 +116,20 @@ export default function TaskSheet() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSave()}
-                className="mt-2 h-14 text-lg rounded-2xl focus-visible:ring-purple-500"
+                className="mt-2 h-14 text-lg rounded-2xl border-gray-200 dark:border-gray-700 focus-visible:ring-purple-500"
                 autoFocus
               />
             </div>
           </div>
 
-          {/* Botão fixo no fundo */}
+          {/* Botão fixo no fundo do sheet */}
           <div className="absolute bottom-8 left-6 right-6">
             <Button
               onClick={handleSave}
               disabled={!title.trim()}
-              className="w-full h-14 rounded-2xl text-lg font-semibold bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl text-lg font-semibold bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50"
             >
-              {editingTask ? "Save Changes" : "Create task"}
+              {editingTask ? "Save Changes" : " task"}
             </Button>
           </div>
         </SheetContent>
@@ -144,7 +138,7 @@ export default function TaskSheet() {
   );
 }
 
-// Função pública para o TaskCard abrir o sheet em modo edição
+// Função pública pro TaskCard usar
 export const openTaskSheetForEdit = (task: Task) => {
   openEditTask?.(task);
 };
