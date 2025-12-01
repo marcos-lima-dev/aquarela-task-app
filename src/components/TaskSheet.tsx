@@ -100,7 +100,8 @@ export default function TaskSheet() {
 
       {/* Bottom Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl pb-8">
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl z-50"  // ← só adiciona z-50 aqui
+>
           {/* Puxador do sheet */}
           <div className="mx-auto w-16 h-1.5 bg-gray-300 rounded-full mt-3 mb-6" />
 

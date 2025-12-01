@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner"; // ← NOVA IMPORT AQUI
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,8 +27,12 @@ export default function RootLayout({
           inter.className
         )}
       >
-        {children}
-        <Toaster /> {/* ← ESSA LINHA AQUI! Renderiza toasts globais, com posição default no topo */}
+        {/* ThemeProvider precisa envolver TUDO, inclusive o Toaster e o Toggle */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+          <Toaster position="top-center" richColors closeButton />
+          <ThemeToggle />
+        </ThemeProvider>
       </body>
     </html>
   );
